@@ -1,5 +1,5 @@
-import { FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { FormEvent, useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { API_URL } from '../config'
 import styles from '../styles/Login.module.css'
@@ -9,7 +9,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.success) {
+      setSuccessMessage(location.state.success)
+    }
+  }, [location])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -22,11 +30,8 @@ export default function LoginPage() {
         password
       })
 
-      // Сохраняем токен и данные пользователя
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('user', JSON.stringify(response.data.user))
-      
-      // Перенаправляем на главную
       navigate('/')
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -44,6 +49,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className={styles.form}>
         <h2>Вход в Instazoo</h2>
         
+        {successMessage && <div className={styles.success}>{successMessage}</div>}
         {error && <div className={styles.error}>{error}</div>}
 
         <input
